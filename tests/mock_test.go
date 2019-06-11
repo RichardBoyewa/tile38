@@ -11,10 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
-	"github.com/tidwall/tile38/controller"
-	tlog "github.com/tidwall/tile38/controller/log"
+	"github.com/gomodule/redigo/redis"
+	"github.com/tidwall/sjson"
 	"github.com/tidwall/tile38/core"
+	tlog "github.com/tidwall/tile38/internal/log"
+	"github.com/tidwall/tile38/internal/server"
 )
 
 var errTimeout = errors.New("timeout")
@@ -51,7 +52,7 @@ func mockOpenServer() (*mockServer, error) {
 	s := &mockServer{port: port}
 	tlog.SetOutput(logOutput)
 	go func() {
-		if err := controller.ListenAndServe("localhost", port, dir, true); err != nil {
+		if err := server.Serve("localhost", port, dir, true); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -195,6 +196,12 @@ func (mc *mockServer) DoExpect(expect interface{}, commandName string, args ...i
 		}
 		return err
 	}
+	if b, ok := resp.([]byte); ok && len(b) > 1 && b[0] == '{' {
+		b, err = sjson.DeleteBytes(b, "elapsed")
+		if err == nil {
+			resp = b
+		}
+	}
 	oresp := resp
 	resp = normalize(resp)
 	if expect == nil && resp != nil {
@@ -226,11 +233,23 @@ func (mc *mockServer) DoExpect(expect interface{}, commandName string, args ...i
 			resp = string([]byte(b))
 		}
 	}
-	if fn, ok := expect.(func(v, org interface{}) (resp, expect interface{})); ok {
-		resp, expect = fn(resp, oresp)
-	}
-	if fn, ok := expect.(func(v interface{}) (resp, expect interface{})); ok {
-		resp, expect = fn(resp)
+	err = func() (err error) {
+		defer func() {
+			v := recover()
+			if v != nil {
+				err = fmt.Errorf("panic '%v'", v)
+			}
+		}()
+		if fn, ok := expect.(func(v, org interface{}) (resp, expect interface{})); ok {
+			resp, expect = fn(resp, oresp)
+		}
+		if fn, ok := expect.(func(v interface{}) (resp, expect interface{})); ok {
+			resp, expect = fn(resp)
+		}
+		return nil
+	}()
+	if err != nil {
+		return err
 	}
 	if fmt.Sprintf("%v", resp) != fmt.Sprintf("%v", expect) {
 		return fmt.Errorf("expected '%v', got '%v'", expect, resp)

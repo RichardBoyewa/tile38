@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
-VERSION="1.11.0"
+cd $(dirname "${BASH_SOURCE[0]}")
+OD="$(pwd)"
+
+VERSION=1.17.1
 PROTECTED_MODE="no"
 
 # Hardcode some values to the core package
@@ -15,11 +18,45 @@ if [ "$PROTECTED_MODE" == "no" ]; then
 fi
 
 if [ "$1" == "update-version" ]; then
-	# update the versions in the README.md and Dockerfile
+	# update the versions in the README.md
 	sed -i '' "s/version-[0-9]*\.[0-9]*\.[0-9]*/version-$VERSION/g" README.md
-	sed -i '' "s/ENV\ TILE38_VERSION\ [0-9]*\.[0-9]*\.[0-9]*/ENV TILE38_VERSION $VERSION/g" docker/Dockerfile
 	exit
 fi
+
+if [ "$1" == "travis-docker-push" ]; then
+    # GIT_VERSION - always the last verison number, like 1.12.1.
+    export GIT_VERSION=$(git describe --tags --abbrev=0)  
+    # GIT_COMMIT_SHORT - the short git commit number, like a718ef0.
+    export GIT_COMMIT_SHORT=$(git rev-parse --short HEAD)
+    # DOCKER_REPO - the base repository name to push the docker build to.
+    export DOCKER_REPO=$DOCKER_USER/tile38
+
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then 
+        # never push from a pull request
+        echo "Not pushing, on a PR or not running in Travis CI"
+    elif [ "$TRAVIS_BRANCH" != "master" ]; then
+        # only the master branch will work
+        echo "Not pushing, not on master"
+    else
+        push(){
+            docker tag $DOCKER_REPO:$GIT_COMMIT_SHORT $DOCKER_REPO:$1
+            docker push $DOCKER_REPO:$1
+            echo "Pushed $DOCKER_REPO:$1"
+        }
+        # docker login
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_LOGIN --password-stdin
+        # build the docker image
+        docker build -f Dockerfile -t $DOCKER_REPO:$GIT_COMMIT_SHORT .
+        if [ "$(curl -s https://hub.docker.com/v2/repositories/$DOCKER_REPO/tags/$GIT_VERSION/ | grep "$GIT_VERSION" | grep "repository")" == "" ]; then
+            # push the newest tag
+            push "$GIT_VERSION"
+            push "latest"
+        fi
+        push "edge"
+    fi
+    exit
+fi
+
 
 # Check go install
 if [ "$(which go)" == "" ]; then
@@ -72,11 +109,6 @@ if [ "$GOVERS" != "devel" ]; then
 	fi
 fi
 
-export GO15VENDOREXPERIMENT=1
-
-cd $(dirname "${BASH_SOURCE[0]}")
-OD="$(pwd)"
-
 package(){
 	echo Packaging $1 Binary
 	bdir=tile38-${VERSION}-$2-$3
@@ -110,6 +142,8 @@ if [ "$1" == "package" ]; then
 	package "Mac" "darwin" "amd64"
 	package "Linux" "linux" "amd64"
 	package "FreeBSD" "freebsd" "amd64"
+	package "ARM" "linux" "arm"
+	package "ARM64" "linux" "arm64"
 	exit
 fi
 
@@ -120,7 +154,6 @@ function rmtemp {
 }
 trap rmtemp EXIT
 
-
 if [ "$NOLINK" != "1" ]; then
     # symlink root to isolated directory
 	mkdir -p "$TMP/go/src/github.com/tidwall"
@@ -129,11 +162,16 @@ if [ "$NOLINK" != "1" ]; then
 	cd "$TMP/go/src/github.com/tidwall/tile38"
 fi
 
+# generate the core package
+core/gen.sh
+
+export CGO_ENABLED=0
+
 # build and store objects into original directory.
-go build -ldflags "$LDFLAGS" -o "$OD/tile38-server" cmd/tile38-server/*.go
-go build -ldflags "$LDFLAGS" -o "$OD/tile38-cli" cmd/tile38-cli/*.go
-go build -ldflags "$LDFLAGS" -o "$OD/tile38-benchmark" cmd/tile38-benchmark/*.go
-go build -ldflags "$LDFLAGS" -o "$OD/tile38-luamemtest" cmd/tile38-luamemtest/*.go
+go build -ldflags "$LDFLAGS -extldflags '-static'" -o "$OD/tile38-server" cmd/tile38-server/*.go
+go build -ldflags "$LDFLAGS -extldflags '-static'" -o "$OD/tile38-cli" cmd/tile38-cli/*.go
+go build -ldflags "$LDFLAGS -extldflags '-static'" -o "$OD/tile38-benchmark" cmd/tile38-benchmark/*.go
+go build -ldflags "$LDFLAGS -extldflags '-static'" -o "$OD/tile38-luamemtest" cmd/tile38-luamemtest/*.go
 
 # test if requested
 if [ "$1" == "test" ]; then

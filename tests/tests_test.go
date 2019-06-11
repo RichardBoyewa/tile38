@@ -42,8 +42,12 @@ func TestAll(t *testing.T) {
 	runSubTest(t, "keys", mc, subTestKeys)
 	runSubTest(t, "json", mc, subTestJSON)
 	runSubTest(t, "search", mc, subTestSearch)
+	runSubTest(t, "testcmd", mc, subTestTestCmd)
 	runSubTest(t, "fence", mc, subTestFence)
 	runSubTest(t, "scripts", mc, subTestScripts)
+	runSubTest(t, "info", mc, subTestInfo)
+	runSubTest(t, "client", mc, subTestClient)
+	runSubTest(t, "timeouts", mc, subTestTimeout)
 }
 
 func runSubTest(t *testing.T, name string, mc *mockServer, test func(t *testing.T, mc *mockServer)) {
@@ -54,7 +58,9 @@ func runSubTest(t *testing.T, name string, mc *mockServer, test func(t *testing.
 }
 
 func runStep(t *testing.T, mc *mockServer, name string, step func(mc *mockServer) error) {
+	t.Helper()
 	t.Run(name, func(t *testing.T) {
+		t.Helper()
 		if err := func() error {
 			// reset the current server
 			mc.ResetConn()

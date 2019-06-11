@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/tidwall/gjson"
 )
 
@@ -18,6 +18,8 @@ func subTestKeys(t *testing.T, mc *mockServer) {
 	runStep(t, mc, "BOUNDS", keys_BOUNDS_test)
 	runStep(t, mc, "DEL", keys_DEL_test)
 	runStep(t, mc, "DROP", keys_DROP_test)
+	runStep(t, mc, "RENAME", keys_RENAME_test)
+	runStep(t, mc, "RENAMENX", keys_RENAMENX_test)
 	runStep(t, mc, "EXPIRE", keys_EXPIRE_test)
 	runStep(t, mc, "FSET", keys_FSET_test)
 	runStep(t, mc, "GET", keys_GET_test)
@@ -63,6 +65,40 @@ func keys_DROP_test(mc *mockServer) error {
 		{"SCAN", "mykey", "COUNT"}, {0},
 		{"DROP", "mykey"}, {0},
 		{"SCAN", "mykey", "COUNT"}, {0},
+	})
+}
+func keys_RENAME_test(mc *mockServer) error {
+	return mc.DoBatch([][]interface{}{
+		{"SET", "mykey", "myid1", "HASH", "9my5xp7"}, {"OK"},
+		{"SET", "mykey", "myid2", "HASH", "9my5xp8"}, {"OK"},
+		{"SCAN", "mykey", "COUNT"}, {2},
+		{"RENAME", "mykey", "mynewkey"}, {"OK"},
+		{"SCAN", "mykey", "COUNT"}, {0},
+		{"SCAN", "mynewkey", "COUNT"}, {2},
+		{"SET", "mykey", "myid3", "HASH", "9my5xp7"}, {"OK"},
+		{"RENAME", "mykey", "mynewkey"}, {"OK"},
+		{"SCAN", "mykey", "COUNT"}, {0},
+		{"SCAN", "mynewkey", "COUNT"}, {1},
+		{"RENAME", "foo", "mynewkey"}, {"ERR key not found"},
+		{"SCAN", "mynewkey", "COUNT"}, {1},
+	})
+}
+func keys_RENAMENX_test(mc *mockServer) error {
+	return mc.DoBatch([][]interface{}{
+		{"SET", "mykey", "myid1", "HASH", "9my5xp7"}, {"OK"},
+		{"SET", "mykey", "myid2", "HASH", "9my5xp8"}, {"OK"},
+		{"SCAN", "mykey", "COUNT"}, {2},
+		{"RENAMENX", "mykey", "mynewkey"}, {1},
+		{"SCAN", "mykey", "COUNT"}, {0},
+		{"DROP", "mykey"}, {0},
+		{"SCAN", "mykey", "COUNT"}, {0},
+		{"SCAN", "mynewkey", "COUNT"}, {2},
+		{"SET", "mykey", "myid3", "HASH", "9my5xp7"}, {"OK"},
+		{"RENAMENX", "mykey", "mynewkey"}, {0},
+		{"SCAN", "mykey", "COUNT"}, {1},
+		{"SCAN", "mynewkey", "COUNT"}, {2},
+		{"RENAMENX", "foo", "mynewkey"}, {"ERR key not found"},
+		{"SCAN", "mynewkey", "COUNT"}, {2},
 	})
 }
 func keys_EXPIRE_test(mc *mockServer) error {
@@ -113,14 +149,20 @@ func keys_KEYS_test(mc *mockServer) error {
 		{"SET", "mykey11", "myid3", "OBJECT", `{"type":"Point","coordinates":[-110,25,-8]}`}, {"OK"},
 		{"SET", "mykey42", "myid2", "HASH", "9my5xp7"}, {"OK"},
 		{"SET", "mykey31", "myid4", "STRING", "value"}, {"OK"},
-		{"KEYS", "*"}, {"[mykey11 mykey22 mykey31 mykey42]"},
-		{"KEYS", "*key*"}, {"[mykey11 mykey22 mykey31 mykey42]"},
-		{"KEYS", "mykey*"}, {"[mykey11 mykey22 mykey31 mykey42]"},
+		{"SET", "mykey310", "myid5", "STRING", "value"}, {"OK"},
+		{"KEYS", "*"}, {"[mykey11 mykey22 mykey31 mykey310 mykey42]"},
+		{"KEYS", "*key*"}, {"[mykey11 mykey22 mykey31 mykey310 mykey42]"},
+		{"KEYS", "mykey*"}, {"[mykey11 mykey22 mykey31 mykey310 mykey42]"},
 		{"KEYS", "mykey4*"}, {"[mykey42]"},
 		{"KEYS", "mykey*1"}, {"[mykey11 mykey31]"},
+		{"KEYS", "mykey*1*"}, {"[mykey11 mykey31 mykey310]"},
+		{"KEYS", "mykey*10"}, {"[mykey310]"},
 		{"KEYS", "mykey*2"}, {"[mykey22 mykey42]"},
 		{"KEYS", "*2"}, {"[mykey22 mykey42]"},
-		{"KEYS", "*1*"}, {"[mykey11 mykey31]"},
+		{"KEYS", "*1*"}, {"[mykey11 mykey31 mykey310]"},
+		{"KEYS", "mykey"}, {"[]"},
+		{"KEYS", "mykey31"}, {"[mykey31]"},
+		{"KEYS", "mykey[^3]*"}, {"[mykey11 mykey22 mykey42]"},
 	})
 }
 func keys_PERSIST_test(mc *mockServer) error {
@@ -354,7 +396,6 @@ func keys_WHEREIN_test(mc *mockServer) error {
 		{"WITHIN", "mykey", "WHEREIN", "a", 3, 0, 1, 2, "BOUNDS", 32.8, -115.2, 33.2, -114.8}, {`[0 [[myid_a1 {"type":"Point","coordinates":[-115,33]} [a 1]] [myid_a2 {"type":"Point","coordinates":[-115,32.99]} [a 2]]]]`},
 	})
 }
-
 
 func keys_WHEREEVAL_test(mc *mockServer) error {
 	return mc.DoBatch([][]interface{}{

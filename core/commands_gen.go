@@ -448,6 +448,38 @@ var commandsJSON = `{
     "since": "1.0.0",
     "group": "keys"
   },
+  "RENAME": {
+    "summary": "Rename a key to be stored under a different name.",
+    "complexity": "O(1)",
+    "arguments": [
+      {
+        "name": "key",
+        "type": "string"
+      },
+      {
+        "name": "newkey",
+        "type": "string"
+      }
+    ],
+    "since": "1.14.5",
+    "group": "keys"
+  },
+  "RENAMENX": {
+    "summary": "Rename a key to be stored under a different name, if a new key does not exist.",
+    "complexity": "O(1)",
+    "arguments": [
+      {
+        "name": "key",
+        "type": "string"
+      },
+      {
+        "name": "newkey",
+        "type": "string"
+      }
+    ],
+    "since": "1.14.5",
+    "group": "keys"
+  },
   "KEYS": {
     "summary": "Finds all keys matching the given pattern",
     "complexity": "O(N) where N is the number of keys in the database",
@@ -527,6 +559,22 @@ var commandsJSON = `{
         "variadic": true
       },
       {
+        "command": "WHEREEVAL",
+        "name": ["script","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVALSHA",
+        "name": ["sha1","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
         "command": "NOFIELDS",
         "name": [],
         "type": [],
@@ -597,6 +645,22 @@ var commandsJSON = `{
         "command": "WHEREIN",
         "name": ["field","count","value"],
         "type": ["string","integer","double"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVAL",
+        "name": ["script","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVALSHA",
+        "name": ["sha1","numargs","arg"],
+        "type": ["string","integer","string"],
         "optional": true,
         "multiple": true,
         "variadic": true
@@ -690,6 +754,22 @@ var commandsJSON = `{
         "command": "WHEREIN",
         "name": ["field","count","value"],
         "type": ["string","integer","double"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVAL",
+        "name": ["script","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVALSHA",
+        "name": ["sha1","numargs","arg"],
+        "type": ["string","integer","string"],
         "optional": true,
         "multiple": true,
         "variadic": true
@@ -792,7 +872,7 @@ var commandsJSON = `{
     "group": "search"
   },
   "WITHIN": {
-    "summary": "Searches for ids that are nearby a point",
+    "summary": "Searches for ids that completely within the area",
     "complexity": "O(log(N)) where N is the number of ids in the area",
     "arguments":[
       {
@@ -834,6 +914,22 @@ var commandsJSON = `{
         "command": "WHEREIN",
         "name": ["field","count","value"],
         "type": ["string","integer","double"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVAL",
+        "name": ["script","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVALSHA",
+        "name": ["sha1","numargs","arg"],
+        "type": ["string","integer","string"],
         "optional": true,
         "multiple": true,
         "variadic": true
@@ -935,6 +1031,23 @@ var commandsJSON = `{
               {
                 "name": "geojson",
                 "type": "geojson"
+              }
+            ]
+          },
+          {
+            "name": "CIRCLE",
+            "arguments": [
+              {
+                "name": "lat",
+                "type": "double"
+              },
+              {
+                "name": "lon",
+                "type": "double"
+              },
+              {
+                "name": "meters",
+                "type": "double"
               }
             ]
           },
@@ -980,7 +1093,7 @@ var commandsJSON = `{
     "group": "search"
   },
   "INTERSECTS": {
-    "summary": "Searches for ids that are nearby a point",
+    "summary": "Searches for ids that intersect an area",
     "complexity": "O(log(N)) where N is the number of ids in the area",
     "arguments":[
       {
@@ -1025,6 +1138,28 @@ var commandsJSON = `{
         "optional": true,
         "multiple": true,
         "variadic": true
+      },
+      {
+        "command": "WHEREEVAL",
+        "name": ["script","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "WHEREEVALSHA",
+        "name": ["sha1","numargs","arg"],
+        "type": ["string","integer","string"],
+        "optional": true,
+        "multiple": true,
+        "variadic": true
+      },
+      {
+        "command": "CLIP",
+        "name": [],
+        "type": [],
+        "optional": true
       },
       {
         "command": "NOFIELDS",
@@ -1123,6 +1258,23 @@ var commandsJSON = `{
               {
                 "name": "geojson",
                 "type": "geojson"
+              }
+            ]
+          },
+          {
+            "name": "CIRCLE",
+            "arguments": [
+              {
+                "name": "lat",
+                "type": "double"
+              },
+              {
+                "name": "lon",
+                "type": "double"
+              },
+              {
+                "name": "meters",
+                "type": "double"
               }
             ]
           },
@@ -1313,6 +1465,26 @@ var commandsJSON = `{
     ],
     "group": "connection"
   },
+  "TIMEOUT": {
+    "summary": "Runs the following command with the timeout",
+    "arguments": [
+      {
+        "name": "seconds",
+        "type": "double"
+      },
+      {
+        "name": "COMMAND",
+        "type": "string"
+      },
+      {
+        "command": "arg",
+        "type": "string",
+        "multiple": true,
+        "optional": true
+      }
+    ],
+    "group": "connection"
+  },
   "SETHOOK": {
     "summary": "Creates a webhook which points to geofenced search",
     "arguments": [
@@ -1329,7 +1501,14 @@ var commandsJSON = `{
         "name": ["name", "value"],
         "type": ["string", "string"],
         "optional": true,
-		"multiple": true
+		    "multiple": true
+      },
+      {
+        "command": "EX",
+        "name": ["seconds"],
+        "type": ["double"],
+        "optional": true,
+        "multiple": false
       },
       {
         "enum": ["NEARBY", "WITHIN", "INTERSECTS"]
@@ -1394,6 +1573,113 @@ var commandsJSON = `{
     ],
     "group": "webhook"
   },
+
+  "SETCHAN": {
+    "summary": "Creates a pubsub channel which points to geofenced search",
+    "arguments": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "command": "META",
+        "name": ["name", "value"],
+        "type": ["string", "string"],
+        "optional": true,
+		    "multiple": true
+      },
+      {
+        "command": "EX",
+        "name": ["seconds"],
+        "type": ["double"],
+        "optional": true,
+        "multiple": false
+      },
+      {
+        "enum": ["NEARBY", "WITHIN", "INTERSECTS"]
+      },
+      {
+        "name": "key",
+        "type": "string"
+      },
+      {
+        "command": "FENCE",
+        "name": [],
+        "type": []
+      },
+      {
+        "command": "DETECT",
+        "name": ["what"],
+        "type": ["string"],
+        "optional": true
+      },
+      {
+        "command": "COMMANDS",
+        "name": ["which"],
+        "type": ["string"],
+        "optional": true
+      },
+      {
+        "name": "param",
+        "type": "string",
+        "variadic": true
+      }
+
+    ],
+    "group": "pubsub"
+  },
+  "DELCHAN": {
+    "summary": "Removes a channel",
+    "arguments": [
+      {
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "group": "pubsub"
+  },
+  "CHANS": {
+    "summary": "Finds all channels matching a pattern",
+    "arguments":[
+      {
+        "name": "pattern",
+        "type": "pattern"
+      }
+    ],
+    "group": "pubsub"
+  },
+  "PDELCHAN": {
+    "summary": "Removes all channels matching a pattern",
+    "arguments":[
+      {
+        "name": "pattern",
+        "type": "pattern"
+      }
+    ],
+    "group": "pubsub"
+  },
+  "SUBSCRIBE": {
+    "summary": "Subscribe to a geofence channel",
+    "arguments":[
+      {
+        "name": "channel",
+        "type": "string",
+        "variadic": true
+      }
+    ],
+    "group": "pubsub"
+  },
+  "PSUBSCRIBE": {
+    "summary": "Subscribes the client to the given patterns",
+    "arguments":[
+      {
+        "name": "pattern",
+        "type": "pattern",
+        "variadic": true
+      }
+    ],
+    "group": "pubsub"
+  },
   "PDEL": {
     "summary": "Removes all objects matching a pattern",
     "arguments":[
@@ -1454,10 +1740,16 @@ var commandsJSON = `{
         "type": "string"
       },
       {
-        "command": "RAW",
         "name": [],
-        "type": [],
-        "optional": true
+        "optional": true,
+        "enumargs": [
+          {
+            "name": "RAW"
+          },
+          {
+            "name": "STR"
+          }
+        ]
       }
     ],
     "group": "keys"
@@ -1483,7 +1775,7 @@ var commandsJSON = `{
   },
   "EVAL":{
     "summary": "Evaluates a Lua script",
-    "complecxity": "Depends on the evaluated script",
+    "complexity": "Depends on the evaluated script",
     "arguments": [
       {
         "name": "script",
@@ -1511,7 +1803,7 @@ var commandsJSON = `{
   },
   "EVALSHA":{
     "summary": "Evaluates a Lua script cached on the server by its SHA1 digest",
-    "complecxity": "Depends on the evaluated script",
+    "complexity": "Depends on the evaluated script",
     "arguments": [
       {
         "name": "sha1",
@@ -1539,7 +1831,7 @@ var commandsJSON = `{
   },
   "EVALRO":{
     "summary": "Evaluates a read-only Lua script",
-    "complecxity": "Depends on the evaluated script",
+    "complexity": "Depends on the evaluated script",
     "arguments": [
       {
         "name": "script",
@@ -1567,7 +1859,7 @@ var commandsJSON = `{
   },
   "EVALROSHA":{
     "summary": "Evaluates a read-only Lua script cached on the server by its SHA1 digest",
-    "complecxity": "Depends on the evaluated script",
+    "complexity": "Depends on the evaluated script",
     "arguments": [
       {
         "name": "script",
@@ -1595,7 +1887,7 @@ var commandsJSON = `{
   },
   "EVALNA":{
     "summary": "Evaluates a Lua script in a non-atomic fashion",
-    "complecxity": "Depends on the evaluated script",
+    "complexity": "Depends on the evaluated script",
     "arguments": [
       {
         "name": "script",
@@ -1623,7 +1915,7 @@ var commandsJSON = `{
   },
   "EVALNASHA":{
     "summary": "Evaluates, in a non-atomic fashion, a Lua script cached on the server by its SHA1 digest",
-    "complecxity": "Depends on the evaluated script",
+    "complexity": "Depends on the evaluated script",
     "arguments": [
       {
         "name": "sha1",
@@ -1679,5 +1971,256 @@ var commandsJSON = `{
     "complexity": "O(1)",
     "since": "1.10.0",
     "group": "scripting"
+  },
+  "TEST":{
+    "summary": "Performs spatial test",
+    "complexity": "One test per command, complexity depends on the test",
+    "arguments": [
+      {
+        "name": "area1",
+        "enumargs": [
+          {
+            "name": "POINT",
+            "arguments": [
+              {
+                "name": "lat",
+                "type": "double"
+              },
+              {
+                "name": "lon",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "GET",
+            "arguments": [
+              {
+                "name": "key",
+                "type": "string"
+              },
+              {
+                "name": "id",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "BOUNDS",
+            "arguments":[
+              {
+                "name": "minlat",
+                "type": "double"
+              },
+              {
+                "name": "minlon",
+                "type": "double"
+              },
+              {
+                "name": "maxlat",
+                "type": "double"
+              },
+              {
+                "name": "maxlon",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "OBJECT",
+            "arguments":[
+              {
+                "name": "geojson",
+                "type": "geojson"
+              }
+            ]
+          },
+          {
+            "name": "CIRCLE",
+            "arguments": [
+              {
+                "name": "lat",
+                "type": "double"
+              },
+              {
+                "name": "lon",
+                "type": "double"
+              },
+              {
+                "name": "meters",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "TILE",
+            "arguments":[
+              {
+                "name": "x",
+                "type": "double"
+              },
+              {
+                "name": "y",
+                "type": "double"
+              },
+              {
+                "name": "z",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "QUADKEY",
+            "arguments":[
+              {
+                "name": "quadkey",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "HASH",
+            "arguments": [
+              {
+                "name": "geohash",
+                "type": "geohash"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "test",
+        "enumargs": [
+          {
+            "name": "INTERSECTS"
+          },
+          {
+            "name": "WITHIN"
+          }
+        ]
+      },
+      {
+        "command": "CLIP",
+        "name": [],
+        "type": [],
+        "optional": true
+      },
+      {
+        "name": "area2",
+        "enumargs": [
+          {
+            "name": "POINT",
+            "arguments": [
+              {
+                "name": "lat",
+                "type": "double"
+              },
+              {
+                "name": "lon",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "GET",
+            "arguments": [
+              {
+                "name": "key",
+                "type": "string"
+              },
+              {
+                "name": "id",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "BOUNDS",
+            "arguments":[
+              {
+                "name": "minlat",
+                "type": "double"
+              },
+              {
+                "name": "minlon",
+                "type": "double"
+              },
+              {
+                "name": "maxlat",
+                "type": "double"
+              },
+              {
+                "name": "maxlon",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "OBJECT",
+            "arguments":[
+              {
+                "name": "geojson",
+                "type": "geojson"
+              }
+            ]
+          },
+          {
+            "name": "CIRCLE",
+            "arguments": [
+              {
+                "name": "lat",
+                "type": "double"
+              },
+              {
+                "name": "lon",
+                "type": "double"
+              },
+              {
+                "name": "meters",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "TILE",
+            "arguments":[
+              {
+                "name": "x",
+                "type": "double"
+              },
+              {
+                "name": "y",
+                "type": "double"
+              },
+              {
+                "name": "z",
+                "type": "double"
+              }
+            ]
+          },
+          {
+            "name": "QUADKEY",
+            "arguments":[
+              {
+                "name": "quadkey",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "name": "HASH",
+            "arguments": [
+              {
+                "name": "geohash",
+                "type": "geohash"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "since": "1.16.0",
+    "group": "tests"
   }
 }`

@@ -20,6 +20,22 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+required = [
+  "github.com/tidwall/lotsa", 
+  "github.com/mmcloughlin/geohash"
+]
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/tidwall/tinybtree"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/tidwall/boxtree"
+
+[[constraint]]
+  name = "github.com/tidwall/geojson"
+  version = "1.1.3"
 
 [[constraint]]
   name = "github.com/Shopify/sarama"
@@ -27,10 +43,6 @@
 
 [[constraint]]
   name = "github.com/eclipse/paho.mqtt.golang"
-  version = "1.1.0"
-
-[[constraint]]
-  name = "github.com/garyburd/redigo"
   version = "1.1.0"
 
 [[constraint]]
@@ -43,19 +55,19 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/streadway/amqp"
+  name = "github.com/gomodule/redigo"
 
 [[constraint]]
-  name = "github.com/stretchr/testify"
-  version = "1.1.4"
+  branch = "master"
+  name = "github.com/streadway/amqp"
 
 [[constraint]]
   branch = "master"
   name = "github.com/tidwall/btree"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/tidwall/buntdb"
+  version = "1.1.0"
 
 [[constraint]]
   name = "github.com/tidwall/gjson"
@@ -76,10 +88,6 @@
 [[constraint]]
   name = "github.com/tidwall/sjson"
   version = "1.0.0"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/tidwall/tinyqueue"
 
 [[constraint]]
   branch = "master"
